@@ -9,6 +9,8 @@ public class Lift {
     private double currentWeightKg;
     private boolean doorsOpen;
     private List<Integer> pendingFloors;
+    private int totalFloorsTravelled; // tracks how many floors this lift has moved in total
+    private int homeFloor; // where this lift parks when idle (for zone-based positioning)
 
     public Lift(String id, int startFloor, double weightCapacityKg) {
         this.id = id;
@@ -18,6 +20,8 @@ public class Lift {
         this.state = ElevatorState.IDLE;
         this.doorsOpen = false;
         this.pendingFloors = new ArrayList<>();
+        this.totalFloorsTravelled = 0;
+        this.homeFloor = startFloor;
     }
 
     public void addPassenger(double weightKg) {
@@ -44,7 +48,10 @@ public class Lift {
     }
 
     public void moveTo(int floor) {
-        System.out.println("Lift " + id + " moving from floor " + currentFloor + " → " + floor);
+        int floorsMovedNow = Math.abs(floor - currentFloor);
+        totalFloorsTravelled += floorsMovedNow;
+        System.out.println("Lift " + id + " moving from floor " + currentFloor + " → " + floor
+            + " (trip cost: " + floorsMovedNow + " floors)");
         if (floor > currentFloor) state = ElevatorState.MOVING_UP;
         else if (floor < currentFloor) state = ElevatorState.MOVING_DOWN;
         currentFloor = floor;
@@ -62,6 +69,18 @@ public class Lift {
         }
     }
 
+    public void setHomeFloor(int floor) { this.homeFloor = floor; }
+    public int getHomeFloor()           { return homeFloor; }
+    public int getTotalFloorsTravelled() { return totalFloorsTravelled; }
+
+    // send lift back to its home floor if it has nothing to do
+    public void returnToHomeIfIdle() {
+        if (state == ElevatorState.IDLE && currentFloor != homeFloor && pendingFloors.isEmpty()) {
+            System.out.println("Lift " + id + " repositioning to home floor " + homeFloor);
+            moveTo(homeFloor);
+        }
+    }
+
     public String getId()                   { return id; }
     public int getCurrentFloor()            { return currentFloor; }
     public ElevatorState getState()         { return state; }
@@ -73,6 +92,7 @@ public class Lift {
     @Override
     public String toString() {
         return "Lift[" + id + " | floor=" + currentFloor + " | state=" + state
-            + " | weight=" + currentWeightKg + "/" + weightCapacityKg + "kg]";
+            + " | weight=" + currentWeightKg + "/" + weightCapacityKg + "kg"
+            + " | totalTravelled=" + totalFloorsTravelled + "]";
     }
 }

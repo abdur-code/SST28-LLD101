@@ -13,9 +13,15 @@ public class Building {
             floors.add(new Floor(i));
         }
 
+        // spread lifts across different zones so they cover the whole building
+        // e.g. 2 lifts in a 20 floor building → one starts at floor 0, another at floor 10
+        int zoneSize = numFloors / Math.max(numLifts, 1);
         List<Lift> lifts = new ArrayList<>();
         for (int i = 0; i < numLifts; i++) {
-            lifts.add(new Lift("L" + (i + 1), 0, 750));
+            int homeFloor = i * zoneSize;
+            Lift lift = new Lift("L" + (i + 1), homeFloor, 750);
+            lift.setHomeFloor(homeFloor);
+            lifts.add(lift);
         }
 
         this.controller = new ElevatorController(

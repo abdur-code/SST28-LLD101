@@ -48,6 +48,15 @@ public class ElevatorController {
         for (int floor : order) {
             lift.moveTo(floor);
         }
+        // once done with all stops, reposition idle lifts back to their home zones
+        // this spreads lifts across the building so the next request has a closer lift
+        repositionIdleLifts();
+    }
+
+    private void repositionIdleLifts() {
+        for (Lift l : lifts) {
+            l.returnToHomeIfIdle();
+        }
     }
 
     public void setLiftUnderMaintenance(String liftId, boolean flag) {
