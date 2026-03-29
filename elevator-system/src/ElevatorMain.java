@@ -17,7 +17,7 @@ public class ElevatorMain {
         ctrl.printStatus();
 
         System.out.println("\n--- person boards at floor 5, presses 12, 8, 15 ---");
-        Lift demoLift = new Lift("L1-demo", 5, 750);
+        Lift demoLift = new Lift("L1-demo", 5, LiftType.PASSENGER);
         demoLift.addDestination(12);
         demoLift.addDestination(8);
         demoLift.addDestination(15);
@@ -26,17 +26,33 @@ public class ElevatorMain {
         java.util.List<Integer> order = scan.schedule(demoLift, demoLift.getPendingFloors());
         System.out.println("stop order from floor 5: " + order);
 
-        System.out.println("\n--- weight overload ---");
-        Lift overloadLift = new Lift("L-test", 0, 750);
-        overloadLift.addPassenger(200);
-        overloadLift.addPassenger(200);
-        overloadLift.addPassenger(200);
-        overloadLift.addPassenger(180); // 780kg total, cap is 750
-        System.out.println(overloadLift);
+        // passenger lift: 750kg, max 10 people
+        System.out.println("\n--- weight overload on passenger lift ---");
+        Lift passengerLift = new Lift("LP", 0, LiftType.PASSENGER);
+        passengerLift.addPassenger(200);
+        passengerLift.addPassenger(200);
+        passengerLift.addPassenger(200);
+        passengerLift.addPassenger(180); // 780kg, over 750 limit
+        System.out.println(passengerLift);
 
         System.out.println("\none person steps off...");
-        overloadLift.removePassenger(180);
-        System.out.println(overloadLift);
+        passengerLift.removePassenger(180);
+        System.out.println(passengerLift);
+
+        // freight lift: 2000kg, max 5 people — same weight would be fine here
+        System.out.println("\n--- same load on a freight lift ---");
+        Lift freightLift = new Lift("LF", 0, LiftType.FREIGHT);
+        freightLift.addPassenger(200);
+        freightLift.addPassenger(200);
+        freightLift.addPassenger(200);
+        freightLift.addPassenger(180);
+        System.out.println(freightLift);
+
+        // but freight has low headcount — 6th person triggers alarm
+        System.out.println("\n--- freight lift headcount test ---");
+        freightLift.addPassenger(50);
+        freightLift.addPassenger(50); // 6th person, limit is 5
+        System.out.println(freightLift);
 
         // 3-lift building to show load balancing across zones
         Building b2 = new Building("Test Block", 15, 3);

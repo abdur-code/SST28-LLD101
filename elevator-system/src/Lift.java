@@ -5,18 +5,20 @@ public class Lift {
     private String id;
     private int currentFloor;
     private ElevatorState state;
-    private double weightCapacityKg;
+    private LiftType liftType;
     private double currentWeightKg;
+    private int passengerCount;
     private boolean doorsOpen;
     private List<Integer> pendingFloors;
-    private int totalFloorsTravelled; // tracks how many floors this lift has moved in total
-    private int homeFloor; // where this lift parks when idle (for zone-based positioning)
+    private int totalFloorsTravelled;
+    private int homeFloor;
 
-    public Lift(String id, int startFloor, double weightCapacityKg) {
+    public Lift(String id, int startFloor, LiftType liftType) {
         this.id = id;
         this.currentFloor = startFloor;
-        this.weightCapacityKg = weightCapacityKg;
+        this.liftType = liftType;
         this.currentWeightKg = 0;
+        this.passengerCount = 0;
         this.state = ElevatorState.IDLE;
         this.doorsOpen = false;
         this.pendingFloors = new ArrayList<>();
@@ -26,18 +28,29 @@ public class Lift {
 
     public void addPassenger(double weightKg) {
         currentWeightKg += weightKg;
-        if (currentWeightKg > weightCapacityKg) {
+        passengerCount++;
+
+        if (passengerCount > liftType.getMaxPassengers()) {
             doorsOpen = true;
-            System.out.println("[ALARM] Lift " + id + " weight limit exceeded! Doors will not close. ("
-                + currentWeightKg + "kg / " + weightCapacityKg + "kg)");
+            System.out.println("[ALARM] Lift " + id + " (" + liftType + ") max passengers exceeded! "
+                + passengerCount + "/" + liftType.getMaxPassengers());
+        }
+        if (currentWeightKg > liftType.getMaxWeightKg()) {
+            doorsOpen = true;
+            System.out.println("[ALARM] Lift " + id + " (" + liftType + ") weight limit exceeded! "
+                + currentWeightKg + "kg / " + liftType.getMaxWeightKg() + "kg");
         }
     }
 
     public void removePassenger(double weightKg) {
         currentWeightKg = Math.max(0, currentWeightKg - weightKg);
-        if (currentWeightKg <= weightCapacityKg && doorsOpen) {
+        passengerCount = Math.max(0, passengerCount - 1);
+
+        boolean weightOk = currentWeightKg <= liftType.getMaxWeightKg();
+        boolean countOk = passengerCount <= liftType.getMaxPassengers();
+        if (weightOk && countOk && doorsOpen) {
             doorsOpen = false;
-            System.out.println("[INFO] Lift " + id + " weight back in range. Doors can close.");
+            System.out.println("[INFO] Lift " + id + " back within limits. Doors can close.");
         }
     }
 
@@ -84,15 +97,17 @@ public class Lift {
     public String getId()                   { return id; }
     public int getCurrentFloor()            { return currentFloor; }
     public ElevatorState getState()         { return state; }
+    public LiftType getLiftType()            { return liftType; }
     public double getCurrentWeightKg()      { return currentWeightKg; }
-    public double getWeightCapacityKg()     { return weightCapacityKg; }
+    public int getPassengerCount()          { return passengerCount; }
     public boolean isDoorsOpen()            { return doorsOpen; }
     public List<Integer> getPendingFloors() { return pendingFloors; }
 
     @Override
     public String toString() {
-        return "Lift[" + id + " | floor=" + currentFloor + " | state=" + state
-            + " | weight=" + currentWeightKg + "/" + weightCapacityKg + "kg"
+        return "Lift[" + id + " | " + liftType + " | floor=" + currentFloor + " | state=" + state
+            + " | passengers=" + passengerCount + "/" + liftType.getMaxPassengers()
+            + " | weight=" + currentWeightKg + "/" + liftType.getMaxWeightKg() + "kg"
             + " | totalTravelled=" + totalFloorsTravelled + "]";
     }
 }

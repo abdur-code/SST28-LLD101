@@ -19,7 +19,7 @@ public class Building {
         List<Lift> lifts = new ArrayList<>();
         for (int i = 0; i < numLifts; i++) {
             int homeFloor = i * zoneSize;
-            Lift lift = new Lift("L" + (i + 1), homeFloor, 750);
+            Lift lift = new Lift("L" + (i + 1), homeFloor, LiftType.PASSENGER);
             lift.setHomeFloor(homeFloor);
             lifts.add(lift);
         }
